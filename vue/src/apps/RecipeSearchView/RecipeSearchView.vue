@@ -156,10 +156,10 @@
                                     <!-- keywords filter -->
                                     <div class="row" v-if="ui.show_keywords">
                                         <div class="col-12">
-                                            <b-input-group class="mt-2">
+                                            <b-input-group class="mt-2" v-for="(x, i) in search.keyword_fields" :key="i">
                                                 <treeselect
                                                     v-if="ui.tree_select"
-                                                    v-model="search.search_keywords"
+                                                    v-model="search.search_keywords[i].items"
                                                     :options="facets.Keywords"
                                                     :load-options="loadKeywordChildren"
                                                     :multiple="true"
@@ -174,8 +174,8 @@
                                                 <generic-multiselect
                                                     @change="genericSelectChanged"
                                                     v-if="!ui.tree_select"
-                                                    parent_variable="search_keywords"
-                                                    :initial_selection="search.search_keywords"
+                                                    :parent_variable="`search_keywords::${i}`"
+                                                    :initial_selection="search.search_keywords[i].items"
                                                     :model="Models.KEYWORD"
                                                     style="flex-grow: 1; flex-shrink: 1; flex-basis: 0"
                                                     :placeholder="$t('Keywords')"
@@ -183,7 +183,7 @@
                                                 ></generic-multiselect>
                                                 <b-input-group-append>
                                                     <b-input-group-text>
-                                                        <b-form-checkbox v-model="search.search_keywords_or" name="check-button" @change="refreshData(false)" class="shadow-none" switch>
+                                                        <b-form-checkbox v-model="search.search_keywords[i].operator" name="check-button" @change="refreshData(false)" class="shadow-none" switch>
                                                             <span class="text-uppercase" v-if="search.search_keywords_or">{{ $t("or") }}</span>
                                                             <span class="text-uppercase" v-else>{{ $t("and") }}</span>
                                                         </b-form-checkbox>
@@ -400,17 +400,24 @@ export default {
                 advanced_search_visible: false,
                 search_input: "",
                 search_internal: false,
-                search_keywords: [],
+                search_keywords: [
+                    { items: [], operator: true },
+                    { items: [], operator: true },
+                    { items: [], operator: true },
+                    { items: [], operator: true },
+                ],
                 search_foods: [],
                 search_books: [],
                 search_units: [],
                 search_ratings: undefined,
+                search_rating_gte: true,
                 search_keywords_or: true,
                 search_foods_or: true,
                 search_books_or: true,
                 search_units_or: true,
                 pagination_page: 1,
                 expert_mode: false,
+                keyword_fields: 1,
             },
             ui: {
                 show_meal_plan: true,
@@ -447,6 +454,12 @@ export default {
                     return ` (${x})`
                 }
             }
+            let label = ""
+            if (this.search.search_rating_gte) {
+                label = this.$t("and_up")
+            } else {
+                label = this.$t("and_down")
+            }
             return [
                 {id: 5, label: "⭐⭐⭐⭐⭐" + ratingCount(this.facets.Ratings?.["5.0"] ?? 0)},
                 {id: 4, label: "⭐⭐⭐⭐ " + this.$t("and_up") + ratingCount(this.facets.Ratings?.["4.0"] ?? 0)},
@@ -472,24 +485,11 @@ export default {
 
 
             if (urlParams.has("keyword")) {
-                this.search.search_keywords = []
+                this.search.search_keywords[0].items = []
                 this.facets.Keywords = []
                 for (let x of urlParams.getAll("keyword")) {
-                    let initial_keyword = {id: Number.parseInt(x), name: "loading..."}
-                    this.search.search_keywords.push(initial_keyword)
-
-                    this.genericAPI(this.Models.KEYWORD, this.Actions.FETCH, {id: initial_keyword.id}).then((response) => {
-                        let kw_index = this.search.search_keywords.findIndex((k => k.id === initial_keyword.id))
-                        this.$set(this.search.search_keywords, kw_index, response.data)
-                        this.$set(this.facets.Keywords, kw_index, response.data)
-                    }).catch((err) => {
-                        if (err.response.status === 404) {
-                            let kw_index = this.search.search_keywords.findIndex((k => k.id === initial_keyword.id))
-                            this.search.search_keywords.splice(kw_index, 1)
-                            this.facets.Keywords.splice(kw_index, 1)
-                            this.refreshData(false)
-                        }
-                    })
+                    this.search.search_keywords[0].items.push(Number.parseInt(x))
+                    this.facets.Keywords.push({ id: x, name: "loading..." })
                 }
             }
 
@@ -499,8 +499,8 @@ export default {
             }
 
             this.facets.Keywords = []
-            for (let x of this.search.search_keywords) {
-                this.facets.Keywords.push({id: x, name: "loading..."})
+            for (let x of this.search.search_keywords[0].items) {
+                this.facets.Keywords.push({ id: x, name: "loading..." })
             }
 
             this.facets.Books = []
@@ -537,8 +537,7 @@ export default {
             this.refreshData(false)
         },
         "ui.tree_select": function () {
-            if (this.ui.tree_select && !this.facets?.Keywords && !this.facets?.Foods) {
-                console.log("i changed to true")
+            if (this.ui.tree_select && (!this.facets?.Keywords || !this.facets?.Foods)) {
                 this.getFacets(this.facets?.hash)
             }
         },
@@ -554,10 +553,11 @@ export default {
     methods: {
         // this.genericAPI inherited from ApiMixin
         refreshData: function (random) {
+            console.log(this.search.search_keywords)
             this.random_search = random
             let params = {
                 query: this.search.search_input,
-                keywords: this.search.search_keywords.map(function (A) {
+                keywords: this.search.search_keywords[0].items.map(function (A) {
                     return A?.["id"] ?? A
                 }),
                 foods: this.search.search_foods.map(function (A) {
@@ -583,6 +583,7 @@ export default {
             if (!this.searchFiltered) {
                 params.options = { query: { last_viewed: this.ui.recently_viewed } }
             }
+            // console.log(params, this.search.search_keywords[0], this.search.search_keywords[0].items)
             this.genericAPI(this.Models.RECIPE, this.Actions.LIST, params)
                 .then((result) => {
                     window.scrollTo(0, 0)
@@ -627,13 +628,19 @@ export default {
             }
         },
         genericSelectChanged: function (obj) {
-            this.search[obj.var] = obj.val
+            if (obj.var.includes("::")) {
+                let x = obj.var.split("::")
+                this.search[x[0]][x[1]].items = obj.val
+            } else {
+                this.search[obj.var] = obj.val
+            }
+
             this.refreshData(false)
         },
         resetSearch: function () {
             this.search.search_input = ""
             this.search.search_internal = false
-            this.search.search_keywords = []
+            this.search.search_keywords[0].items = []
             this.search.search_foods = []
             this.search.search_books = []
             this.search.search_units = []
@@ -681,7 +688,7 @@ export default {
             // TODO refactor this so that it isn't a total copy of refreshData
             let params = {
                 query: this.search.search_input,
-                keywords: this.search.search_keywords,
+                keywords: this.search.search_keywords[0].items,
                 foods: this.search.search_foods,
                 rating: this.search.search_ratings,
                 books: this.search.search_books.map(function (A) {
@@ -721,16 +728,17 @@ export default {
         },
         searchFiltered: function (ignore_string = false) {
             let filtered =
-                this.search?.search_keywords?.length === 0 &&
+                this.search?.search_keywords[0].items?.length === 0 &&
                 this.search?.search_foods?.length === 0 &&
                 this.search?.search_books?.length === 0 &&
                 // this.settings?.pagination_page === 1 &&
                 !this.random_search &&
                 this.search?.search_ratings === undefined
+
             if (ignore_string) {
-                return filtered
+                return !filtered
             } else {
-                return filtered && this.search?.search_input === ""
+                return !filtered && this.search?.search_input !== ""
             }
         },
     },
