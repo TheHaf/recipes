@@ -1543,6 +1543,12 @@ export interface RecipeBook {
      * @memberof RecipeBook
      */
     created_by?: string;
+    /**
+     * 
+     * @type {RecipeBookFilter}
+     * @memberof RecipeBook
+     */
+    filter?: RecipeBookFilter;
 }
 /**
  * 
@@ -1580,6 +1586,43 @@ export interface RecipeBookEntry {
      * @memberof RecipeBookEntry
      */
     recipe_content?: string;
+}
+/**
+ * 
+ * @export
+ * @interface RecipeBookFilter
+ */
+export interface RecipeBookFilter {
+    /**
+     * 
+     * @type {number}
+     * @memberof RecipeBookFilter
+     */
+    id?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof RecipeBookFilter
+     */
+    name: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof RecipeBookFilter
+     */
+    search: string;
+    /**
+     * 
+     * @type {Array<CustomFilterShared>}
+     * @memberof RecipeBookFilter
+     */
+    shared?: Array<CustomFilterShared>;
+    /**
+     * 
+     * @type {string}
+     * @memberof RecipeBookFilter
+     */
+    created_by?: string;
 }
 /**
  * 

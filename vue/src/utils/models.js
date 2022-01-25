@@ -242,7 +242,7 @@ export class Models {
         name: i18n.t("Recipe_Book"),
         apiName: "RecipeBook",
         create: {
-            params: [["name", "description", "icon"]],
+            params: [["name", "description", "icon", "filter"]],
             form: {
                 name: {
                     form_field: true,
@@ -263,6 +263,13 @@ export class Models {
                     type: "emoji",
                     field: "icon",
                     label: i18n.t("Icon"),
+                },
+                filter: {
+                    form_field: true,
+                    type: "lookup",
+                    field: "filter",
+                    label: i18n.t("Custom Filter"),
+                    list: "CUSTOM_FILTER",
                 },
             },
         },
