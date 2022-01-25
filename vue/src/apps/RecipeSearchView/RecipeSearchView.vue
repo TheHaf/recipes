@@ -1,6 +1,6 @@
 <template>
     <div id="app" style="margin-bottom: 4vh">
-        <RecipeSwitcher ref="ref_recipe_switcher"/>
+        <RecipeSwitcher ref="ref_recipe_switcher" />
         <div class="row">
             <div class="col-12 col-xl-8 col-lg-10 offset-xl-2 offset-lg-1">
                 <div class="row">
@@ -8,16 +8,12 @@
                         <div class="row justify-content-center">
                             <div class="col-12 col-lg-10 col-xl-8 mt-3 mb-3">
                                 <b-input-group>
-                                    <b-input
-                                        class="form-control form-control-lg form-control-borderless form-control-search"
-                                        v-model="search.search_input" v-bind:placeholder="$t('Search')"></b-input>
+                                    <b-input class="form-control form-control-lg form-control-borderless form-control-search" v-model="search.search_input" v-bind:placeholder="$t('Search')"></b-input>
                                     <b-input-group-append>
-                                        <b-button v-b-tooltip.hover :title="$t('show_sql')" @click="showSQL()"
-                                                  v-if="debug && ui.sql_debug">
+                                        <b-button v-b-tooltip.hover :title="$t('show_sql')" @click="showSQL()" v-if="debug && ui.sql_debug">
                                             <i class="fas fa-bug" style="font-size: 1.5em"></i>
                                         </b-button>
-                                        <b-button variant="light" v-b-tooltip.hover :title="$t('Random Recipes')"
-                                                  @click="openRandom()">
+                                        <b-button variant="light" v-b-tooltip.hover :title="$t('Random Recipes')" @click="openRandom()">
                                             <i class="fas fa-dice-five" style="font-size: 1.5em"></i>
                                         </b-button>
                                         <b-button v-b-toggle.collapse_advanced_search v-b-tooltip.hover :title="$t('Advanced Settings')" v-bind:variant="searchFiltered(true) ? 'danger' : 'primary'">
@@ -30,18 +26,15 @@
                             </div>
                         </div>
 
-                        <b-collapse id="collapse_advanced_search" class="mt-2 shadow-sm"
-                                    v-model="search.advanced_search_visible">
+                        <b-collapse id="collapse_advanced_search" class="mt-2 shadow-sm" v-model="search.advanced_search_visible">
                             <div class="card">
                                 <div class="card-body p-4">
                                     <div class="row">
                                         <div class="col-md-3">
-                                            <a class="btn btn-primary btn-block text-uppercase"
-                                               :href="resolveDjangoUrl('new_recipe')">{{ $t("New_Recipe") }}</a>
+                                            <a class="btn btn-primary btn-block text-uppercase" :href="resolveDjangoUrl('new_recipe')">{{ $t("New_Recipe") }}</a>
                                         </div>
                                         <div class="col-md-3">
-                                            <a class="btn btn-primary btn-block text-uppercase"
-                                               :href="resolveDjangoUrl('data_import_url')">{{ $t("Import") }}</a>
+                                            <a class="btn btn-primary btn-block text-uppercase" :href="resolveDjangoUrl('data_import_url')">{{ $t("Import") }}</a>
                                         </div>
                                         <div class="col-md-3">
                                             <button
@@ -60,9 +53,7 @@
                                         </div>
 
                                         <div class="col-md-3">
-                                            <button id="id_settings_button"
-                                                    class="btn btn-primary btn-block text-uppercase"><i
-                                                class="fas fa-cog fa-lg m-1"></i></button>
+                                            <button id="id_settings_button" class="btn btn-primary btn-block text-uppercase"><i class="fas fa-cog fa-lg m-1"></i></button>
                                         </div>
                                     </div>
                                     <div v-if="ui.enable_expert" class="row justify-content-end small">
@@ -156,9 +147,7 @@
 
                                         <div class="row" style="margin-top: 1vh">
                                             <div class="col-12" style="text-align: right">
-                                                <b-button size="sm" variant="secondary" style="margin-right: 8px"
-                                                          @click="$root.$emit('bv::hide::popover')">{{ $t("Close") }}
-                                                </b-button>
+                                                <b-button size="sm" variant="secondary" style="margin-right: 8px" @click="$root.$emit('bv::hide::popover')">{{ $t("Close") }} </b-button>
                                             </div>
                                         </div>
                                     </b-popover>
@@ -512,17 +501,14 @@
                             <template v-if="searchFiltered()">
                                 <recipe-card v-bind:key="`mp_${m.id}`" v-for="m in meal_plans" :recipe="m.recipe" :meal_plan="m" :footer_text="m.meal_type_name" footer_icon="far fa-calendar-alt"></recipe-card>
                             </template>
-                            <recipe-card v-for="r in recipes" v-bind:key="r.id" :recipe="r"
-                                         :footer_text="isRecentOrNew(r)[0]"
-                                         :footer_icon="isRecentOrNew(r)[1]"></recipe-card>
+                            <recipe-card v-for="r in recipes" v-bind:key="r.id" :recipe="r" :footer_text="isRecentOrNew(r)[0]" :footer_icon="isRecentOrNew(r)[1]"></recipe-card>
                         </div>
                     </div>
                 </div>
 
                 <div class="row" style="margin-top: 2vh" v-if="!random_search">
                     <div class="col col-md-12">
-                        <b-pagination pills v-model="search.pagination_page" :total-rows="pagination_count"
-                                      :per-page="ui.page_size" @change="pageChange" align="center"></b-pagination>
+                        <b-pagination pills v-model="search.pagination_page" :total-rows="pagination_count" :per-page="ui.page_size" @change="pageChange" align="center"></b-pagination>
                     </div>
                 </div>
             </div>
@@ -533,7 +519,7 @@
 
 <script>
 import Vue from "vue"
-import {BootstrapVue} from "bootstrap-vue"
+import { BootstrapVue } from "bootstrap-vue"
 
 import "bootstrap-vue/dist/bootstrap-vue.css"
 import moment from "moment"
@@ -744,7 +730,6 @@ export default {
                 this.search = Object.assign({}, this.search, this.$cookies.get(SEARCH_COOKIE_NAME))
             }
             let urlParams = new URLSearchParams(window.location.search)
-
 
             if (urlParams.has("keyword")) {
                 this.search.search_keywords[0].items = []
@@ -961,7 +946,7 @@ export default {
             if (!this.ui.tree_select) {
                 return
             }
-            let params = {hash: hash}
+            let params = { hash: hash }
             if (facet) {
                 params[facet] = id
             }
@@ -974,7 +959,7 @@ export default {
             this.genericAPI(this.Models.RECIPE, this.Actions.LIST, params).then((result) => {})
         },
         // TODO refactor to combine with load KeywordChildren
-        loadFoodChildren({action, parentNode, callback}) {
+        loadFoodChildren({ action, parentNode, callback }) {
             if (action === LOAD_CHILDREN_OPTIONS) {
                 if (this.facets?.cache_key) {
                     this.getFacets(this.facets.cache_key, "food", parentNode.id).then(callback())
